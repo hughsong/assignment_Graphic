@@ -363,17 +363,6 @@ namespace asgn5v1
                 }
             }
             ctrans = newCtrans;
-
-		
-			if (counter == 1)
-			{
-				init = ctrans;
-				counter++;
-			}
-			else
-			{
-				counter++;
-			}
 			
         }		
         private void scale(double xfactor,double yfactor,double zfactor)
@@ -398,7 +387,31 @@ namespace asgn5v1
             ctrans = newCtrans;
         }
 
-        private void shearX(double sf) {
+		private void reflectY()
+		{
+			int k;
+			double temp;
+			double[,] reflectMatrix = new double[4, 4];
+			double[,] newCtrans = new double[4, 4];
+			setIdentity(reflectMatrix, 4, 4);
+			reflectMatrix[0, 0] = 1;
+			reflectMatrix[1, 1] = -1;
+			reflectMatrix[2, 2] = 1;
+
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					temp = 0.0d;
+					for (k = 0; k < 4; k++)
+						temp += ctrans[i, k] * reflectMatrix[k, j];
+					newCtrans[i, j] = temp;
+				}
+			}
+			ctrans = newCtrans;
+		}
+
+		private void shearX(double sf) {
             double X = scrnpts[17, 0];
             double Y = scrnpts[17, 1];
             double Z = scrnpts[17, 2];
@@ -408,7 +421,7 @@ namespace asgn5v1
             double[,] newCtrans = new double[4, 4];
             setIdentity(shearx, 4, 4);
             shearx[1, 0] = sf;
-            translatation(-X, -Y, -Z);
+
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
@@ -419,7 +432,6 @@ namespace asgn5v1
                 }
             }
             ctrans = newCtrans;
-            translatation(X, Y, Z);
         }
 
         private void rotateX(double radians) {
@@ -525,11 +537,11 @@ namespace asgn5v1
 			//move the centoid to origin
 			translatation(-centerX, -centerY, -centerZ);
 
-            //rotate 90 degree aroung z axis
-            rotateZ(Math.PI / 2);
+			//rotate 90 degree aroung z axis
+			reflectY();
 
-            //universal scale 20 times 
-            scale(n, n, n);
+			//universal scale 20 times 
+			scale(n, n, n);
 
 			Console.WriteLine("max: " + maxY + "  height is : " + height);
 
@@ -540,7 +552,7 @@ namespace asgn5v1
 
             //move the centroid to the screen center
             translatation(windowWidth / 2, windowHeight / 2, 0);
-
+			init = ctrans;
 
 		}
 
@@ -713,34 +725,35 @@ namespace asgn5v1
 
 		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
 		{
+			timer1.Stop();
 			if (e.Button == transleftbtn)
 			{
-				timer1.Stop();
+				
 				translatation(-75d, 0, 0);
 				Refresh();
 			}
 			if (e.Button == transrightbtn) 
 			{
-				timer1.Stop();
+				
 				translatation(75d, 0, 0);
 				Refresh();
 			}
 			if (e.Button == transupbtn)
 			{
-				timer1.Stop();
+				
 				translatation(0, -35d, 0);
 				Refresh();
 			}
 			
 			if(e.Button == transdownbtn)
 			{
-				timer1.Stop();
+				
 				translatation(0, 35d, 0);
 				Refresh();
 			}
 			if (e.Button == scaleupbtn) 
 			{
-				timer1.Stop();
+				
 				centerX = scrnpts[0, 0];
 				centerY = scrnpts[0, 1];
 				centerZ = scrnpts[0, 2];
@@ -751,7 +764,7 @@ namespace asgn5v1
 			}
 			if (e.Button == scaledownbtn) 
 			{
-				timer1.Stop();
+				
 				centerX = scrnpts[0, 0];
 				centerY = scrnpts[0, 1];
 				centerZ = scrnpts[0, 2];
@@ -763,7 +776,7 @@ namespace asgn5v1
 			}
 			if (e.Button == rotxby1btn) 
 			{
-				timer1.Stop();
+				
 				moveToOrigin();
 				rotateX(0.05);
 				translatation(centerX, centerY, centerZ);
@@ -771,7 +784,7 @@ namespace asgn5v1
 			}
 			if (e.Button == rotyby1btn) 
 			{
-				timer1.Stop();
+				
 				moveToOrigin();
 				rotateY(0.05);
 				translatation(centerX, centerY, centerZ);
@@ -779,7 +792,7 @@ namespace asgn5v1
 			}
 			if (e.Button == rotzby1btn) 
 			{
-				timer1.Stop();
+				
 				moveToOrigin();
 				rotateZ(0.05);
 				translatation(centerX, centerY, centerZ);
@@ -789,13 +802,13 @@ namespace asgn5v1
 			if (e.Button == rotxbtn) 
 			{
 				button = 1;
-				timer1.Stop();
+				
 				timer1.Start();
 			}
 			if (e.Button == rotybtn) 
 			{
 				button = 2;
-				timer1.Stop();
+				
 				timer1.Start();
 			}
 			
@@ -808,24 +821,54 @@ namespace asgn5v1
 
 			if(e.Button == shearleftbtn)
 			{
+				/*
+				double[,] point = new double[1, 4];
+
+				double[,] temp = new double[1, 4];
+
+				point[0, 3] = 1;
+				double num;
+
+				
+					for (int j = 0; j < 4; j++)
+					{
+						num = 0.0d;
+						for (int k = 0; k < 4; k++)
+							num += point[0,j] * ctrans[k, j];
+						temp[0, j] = num;
+					}
+					*/
+				double temp = ctrans[3, 1];
+				translatation(0, -temp, 0);
                 shearX(-0.1);
-                timer1.Stop();
-                Refresh();
+				translatation(0, temp, 0);
+				Refresh();
             }
 
 			if (e.Button == shearrightbtn) 
 			{
-                shearX(0.1);
-                timer1.Stop();
-                //shearX(1.1);
-                Refresh();
+				double[,] point = new double[1, 4];
+
+				//double[,] temp = new double[1, 4];
+
+				point[0, 3] = 1;
+
+
+				double temp = ctrans[3, 1];
+
+
+				translatation(0, -temp,0);
+				shearX(0.1);
+                
+				translatation(0, temp, 0);
+				Refresh();
             }
 
 			if (e.Button == resetbtn)
 			{
 
-				
-				
+
+				timer1.Stop();
 				ctrans = init;
 				
 				Refresh();
